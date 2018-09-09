@@ -54,8 +54,8 @@ public class NevsWebApplication {
 
 		@Override
 		public void addInterceptors(InterceptorRegistry registry) {
-			registry.addInterceptor(commonInterceptor).addPathPatterns("/**");
-			super.addInterceptors(registry);
+			//registry.addInterceptor(commonInterceptor).addPathPatterns("/**");
+			//super.addInterceptors(registry);
 		}
 
 		@Override
