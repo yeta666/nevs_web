@@ -275,9 +275,10 @@ public class UserService {
      * @param userId
      * @param updateUser
      * @param newPassword
+     * @param dimission
      * @return
      */
-    public CommonResponse update(String userId, User updateUser, String newPassword) {
+    public CommonResponse update(String userId, User updateUser, String newPassword, Integer dimission) {
         //判断参数
         String id = updateUser.getId();
         if (commonUtil.isNull(id)) {
@@ -292,7 +293,7 @@ public class UserService {
         if (!commonUtil.isNull(newPassword) && commonUtil.isNull(userId)) {      //修改密码
             return updatePassword(updateUser, userOptional.get(), newPassword);
         } else if (!commonUtil.isNull(userId) && commonUtil.isNull(newPassword)) {        //修改用户信息
-            return updateUser(userId, updateUser);
+            return updateUser(userId, updateUser, dimission);
         } else {
             return new CommonResponse(false, 3, "修改用户信息失败");
         }
@@ -329,27 +330,42 @@ public class UserService {
      * 修改用户信息
      * @param userId
      * @param user
+     * @param dimission
      * @return
      */
-    public CommonResponse updateUser(String userId, User user) {
+    public CommonResponse updateUser(String userId, User user, Integer dimission) {
         //判断权限
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isPresent()) {
-            User admim = userOptional.get();
-            if (admim.getRoleId() < 3) {        //只有超级管理员和部门管理员可以修改信息
+            User admin = userOptional.get();
+            if (admin.getRoleId() < 3) {        //只有超级管理员和部门管理员可以修改信息
                 //修改
-                if (userRepository.updateUser(user.getIdCardNo(),
-                        user.getImageUrl1(),
-                        user.getImageUrl2(),
-                        user.getCreditCardNo(),
-                        user.getBankOfDeposit(),
-                        user.getPhone(),
-                        user.getId()) == 1) {
-                    return new CommonResponse();
+                if (!commonUtil.isNull(dimission) && dimission == 1) {
+                    if (userRepository.updateUser(user.getIdCardNo(),
+                            user.getImageUrl1(),
+                            user.getImageUrl2(),
+                            user.getCreditCardNo(),
+                            user.getBankOfDeposit(),
+                            user.getPhone(),
+                            7,
+                            user.getId()) == 1) {
+                        return new CommonResponse();
+                    }
+                } else {
+                    if (userRepository.updateUser(user.getIdCardNo(),
+                            user.getImageUrl1(),
+                            user.getImageUrl2(),
+                            user.getCreditCardNo(),
+                            user.getBankOfDeposit(),
+                            user.getPhone(),
+                            user.getRoleId(),
+                            user.getId()) == 1) {
+                        return new CommonResponse();
+                    }
                 }
                 //超级管理员记录行为日志
-                if (admim.getRoleId() == 1) {
-                    commonUtil.addLog(6, "修改姓名为：" + user.getName() + "的用户信息", admim.getName());
+                if (admin.getRoleId() == 1) {
+                    commonUtil.addLog(6, "修改姓名为：" + user.getName() + "的用户信息", admin.getName());
                 }
             }
         }

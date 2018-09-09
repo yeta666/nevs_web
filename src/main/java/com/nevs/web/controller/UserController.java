@@ -44,13 +44,15 @@ public class UserController {
      * @param userId
      * @param user
      * @param newPassword
+     * @param dimission
      * @return
      */
     @PostMapping(value = "/update")
     public CommonResponse update(@RequestParam(value = "userId", required = false) String userId,
                                  User user,
-                                 @RequestParam(value = "newPassword", required = false) String newPassword) {
-        return userService.update(userId, user, newPassword);
+                                 @RequestParam(value = "newPassword", required = false) String newPassword,
+                                 @RequestParam(value = "dimission", required = false) Integer dimission) {
+        return userService.update(userId, user, newPassword, dimission);
     }
 
     //查

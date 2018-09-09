@@ -25,8 +25,8 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
 
     @Modifying
     @Transactional
-    @Query("update User u set u.idCardNo = ?1, u.imageUrl1 = ?2, u.imageUrl2 = ?3, u.creditCardNo = ?4, u.bankOfDeposit = ?5, u.phone = ?6 where u.id = ?7")
-    int updateUser(String idCardNo, String imageUrl1, String imageUrl2, String creditCardNo, String bankOfDeposit, String phone, String id);
+    @Query("update User u set u.idCardNo = ?1, u.imageUrl1 = ?2, u.imageUrl2 = ?3, u.creditCardNo = ?4, u.bankOfDeposit = ?5, u.phone = ?6, u.roleId = ?7 where u.id = ?8")
+    int updateUser(String idCardNo, String imageUrl1, String imageUrl2, String creditCardNo, String bankOfDeposit, String phone, Integer roleId, String id);
 
     @Modifying
     @Transactional
