@@ -21,6 +21,8 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
 
     List<User> findAllByDepartmentId(Integer departmentId);
 
+    List<User> findAllByDepartmentIdAndRoleIdNotIn(Integer departmentId, Integer roleId);
+
     List<User> findAllByInvitationCode(String invitationCode);
 
     @Modifying

@@ -1,7 +1,9 @@
 package com.nevs.web.service;
 
 import com.nevs.web.model.Log;
+import com.nevs.web.model.User;
 import com.nevs.web.repository.LogRepository;
+import com.nevs.web.repository.UserRepository;
 import com.nevs.web.util.CommonResponse;
 import com.nevs.web.util.CommonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author YETA
@@ -30,6 +33,9 @@ public class LogService {
 
     @Autowired
     private LogRepository logRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private CommonUtil commonUtil;
@@ -46,7 +52,12 @@ public class LogService {
      */
     public CommonResponse search(Integer page, Integer size, String userId, Date startTime, Date endTime, Log log) {
         //判断权限
-        if (!commonUtil.verifyAuthority(userId, 1)) {       //1:超级管理员
+        Optional<User> userOptional  = userRepository.findById(userId);
+        if (!userOptional.isPresent()) {
+            return new CommonResponse(false, 3, "无权查询日志");
+        }
+        Integer roleId = userOptional.get().getRoleId();
+        if (roleId != 1 && roleId != 6) {
             return new CommonResponse(false, 3, "无权查询日志");
         }
         //查询

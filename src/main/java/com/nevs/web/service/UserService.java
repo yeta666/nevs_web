@@ -411,7 +411,7 @@ public class UserService {
                 return new CommonResponse(userRepository.findAllByDepartmentId(0));
             } else if (type == 2) {     //修改部门时筛选用户
                 List<User> userList = userRepository.findAllByDepartmentId(0);
-                userList.addAll(userRepository.findAllByDepartmentId(user.getDepartmentId()));
+                userList.addAll(userRepository.findAllByDepartmentIdAndRoleIdNotIn(user.getDepartmentId(), 7));     //7:已离职
                 return new CommonResponse(userList);
             }
             return new CommonResponse(false, 3, "获取用户信息失败");
@@ -460,7 +460,11 @@ public class UserService {
 
         //验证权限
         Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent() || userOptional.get().getRoleId() != 1) {
+        if (!userOptional.isPresent()) {
+            throw new UserException("无权下载用户信息");
+        }
+        Integer roleId = userOptional.get().getRoleId();
+        if (roleId != 1 && roleId != 6) {
             throw new UserException("无权下载用户信息");
         }
 
@@ -497,7 +501,12 @@ public class UserService {
                         row.createCell(3).setCellValue(department.getName());
                         row.createCell(4).setCellValue(user.getTotalSales());
                         row.createCell(5).setCellValue(user.getIndirectSales());
-                        row.createCell(6).setCellValue(user.getIntegral());
+                        if (user.getRoleId() == 7) {
+                            row.createCell(6).setCellValue(0);
+                            row.createCell(7).setCellValue("已离职");
+                        } else {
+                            row.createCell(6).setCellValue(user.getIntegral());
+                        }
                     }
                     //超级管理员记录行为日志
                     commonUtil.addLog(7, "下载部门名：" + department.getName() + "的用户信息", userOptional.get().getName());
@@ -518,7 +527,12 @@ public class UserService {
                     row.createCell(3).setCellValue(department.getName());
                     row.createCell(4).setCellValue(user.getTotalSales());
                     row.createCell(5).setCellValue(user.getIndirectSales());
-                    row.createCell(6).setCellValue(user.getIntegral());
+                    if (user.getRoleId() == 7) {
+                        row.createCell(6).setCellValue(0);
+                        row.createCell(7).setCellValue("已离职");
+                    } else {
+                        row.createCell(6).setCellValue(user.getIntegral());
+                    }
                 }
             }
             //超级管理员记录行为日志

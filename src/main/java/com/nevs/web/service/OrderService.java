@@ -167,7 +167,7 @@ public class OrderService {
         if (pass == 1) {      //审核通过
 
             //修改订单状态为审核通过
-            if (orderRepository.updateOrderStatusAndReasonOfCanNotPass(1, null, orderNo) != 1) {
+            if (orderRepository.updateOrderStatusAndReasonOfCanNotPass(1, reasonOfCanNotPass, orderNo) != 1) {
                 throw new OrderException("修改订单状态为审核通过失败");
             }
 
@@ -241,6 +241,9 @@ public class OrderService {
 
             //判断该订单的销售是否是部门管理员
             if (!sOrder.getSalesId().equals(department.getManagerId())) {
+
+                String integralTradingId = null;
+
                 //获取该订单的销售的邀请人
                 if (user1.getInvitationCode() == null) {
                     throw new OrderException("该销售的邀请码为空");
@@ -272,44 +275,45 @@ public class OrderService {
                             finance.get().getName(),
                             new Date(),
                             orderNo));
+                    integralTradingId = integralTrading1.getId();
                     if (integralTrading1 == null) {
                         throw new OrderException("记录积分交易细节失败1");
                     }
+                }
 
-                    //获取该订单的销售的邀请人的邀请人
-                    if (user2.getInvitationCode() == null) {
-                        throw new OrderException("该销售的邀请人的邀请码为空");
-                    }
-                    Optional<User> userOptional3 = userRepository.findById(user2.getInvitationCode());
-                    if (!userOptional3.isPresent()) {
-                        throw new OrderException("获取该订单的销售的邀请人的邀请人失败");
-                    }
-                    User user3 = userOptional3.get();
+                //获取该订单的销售的邀请人的邀请人
+                if (user2.getInvitationCode() == null) {
+                    throw new OrderException("该销售的邀请人的邀请码为空");
+                }
+                Optional<User> userOptional3 = userRepository.findById(user2.getInvitationCode());
+                if (!userOptional3.isPresent()) {
+                    throw new OrderException("获取该订单的销售的邀请人的邀请人失败");
+                }
+                User user3 = userOptional3.get();
 
-                    //判断该订单的销售的邀请人的邀请人是否有资格获取积分
-                    if (user3.getRoleId() == 2 || user3.getRoleId() == 3) {
-                        //判断该订单的销售的邀请人的邀请人是否和该销售是同一个部门
-                        if (user3.getDepartmentId() != departmentId) {
-                            throw new OrderException("该订单的销售与该订单的销售的邀请人的邀请人不是同一个部门");
-                        }
-                        //第二级，增加 1000 * 车辆数量 积分，并且并且修改该销售的邀请人的邀请人的间接销售量
-                        if (userRepository.addIntegralAndUpdatIndirectSales(award.getSecondaryReward() * quantity, quantity, user3.getId()) != 1) {
-                            throw new OrderException("增加该订单的销售人的邀请人的邀请人的积分失败");
-                        }
-                        //记录积分交易细节
-                        if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
-                                user3.getId(),
-                                user3.getName(),
-                                departmentId,
-                                departmentName,
-                                1,
-                                award.getSecondaryReward() * quantity,
-                                finance.get().getName(),
-                                new Date(),
-                                orderNo,
-                                integralTrading1.getId())) == null) {
-                            throw new OrderException("记录积分交易细节失败2");
-                        }
+                //判断该订单的销售的邀请人的邀请人是否有资格获取积分
+                if (user3.getRoleId() == 2 || user3.getRoleId() == 3) {
+                    //判断该订单的销售的邀请人的邀请人是否和该销售是同一个部门
+                    if (user3.getDepartmentId() != departmentId) {
+                        throw new OrderException("该订单的销售与该订单的销售的邀请人的邀请人不是同一个部门");
+                    }
+                    //第二级，增加 1000 * 车辆数量 积分，并且并且修改该销售的邀请人的邀请人的间接销售量
+                    if (userRepository.addIntegralAndUpdatIndirectSales(award.getSecondaryReward() * quantity, quantity, user3.getId()) != 1) {
+                        throw new OrderException("增加该订单的销售人的邀请人的邀请人的积分失败");
+                    }
+                    //记录积分交易细节
+                    if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
+                            user3.getId(),
+                            user3.getName(),
+                            departmentId,
+                            departmentName,
+                            1,
+                            award.getSecondaryReward() * quantity,
+                            finance.get().getName(),
+                            new Date(),
+                            orderNo,
+                            integralTradingId)) == null) {
+                        throw new OrderException("记录积分交易细节失败2");
                     }
                 }
             }
