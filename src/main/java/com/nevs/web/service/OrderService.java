@@ -63,7 +63,12 @@ public class OrderService {
         String orderNo = order.getOrderNo();
         String salesId = order.getSalesId();
         String vehicleId = order.getVehicleId();
-        if (commonUtil.isNull(orderNo) || commonUtil.isNull(salesId) || commonUtil.isNull(vehicleId) || commonUtil.isNull(order.getOrderImageUrl())) {
+        if (commonUtil.isNull(orderNo) ||
+                commonUtil.isNull(salesId) ||
+                commonUtil.isNull(vehicleId) ||
+                commonUtil.isNull(order.getOrderImageUrl()) ||
+                commonUtil.isNull(order.getPrice()) ||
+                commonUtil.isNull(order.getQuantity())) {
             return new CommonResponse(false, 3, "订单信息填写不完整");
         }
         //判断订单号是否已存在
@@ -196,6 +201,37 @@ public class OrderService {
             Department department = departmentOptional.get();
             String departmentName = department.getName();
 
+            //股东购车
+            if (user1.getRoleId() == 8) {
+                Integer carIntegral = user1.getCarIntegral();
+                Integer deductionPrice = sOrder.getDeductionPrice();
+                //判断购车积分
+                if (carIntegral < deductionPrice) {
+                    throw new OrderException("股东购车可用抵扣积分不足");
+                } else {
+                    //减少购车积分
+                    user1.setCarIntegral(carIntegral - deductionPrice);
+                    if (userRepository.save(user1) != null) {
+                        //记录积分交易
+                        if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
+                                user1.getId(),
+                                user1.getName(),
+                                departmentId,
+                                departmentName,
+                                2,
+                                deductionPrice,
+                                "股东购车，抵扣购车积分",
+                                new Date())) != null) {
+                            return new CommonResponse();
+                        } else {
+                            throw new OrderException("记录积分交易失败");
+                        }
+                    } else {
+                        throw new OrderException("减少股东购车可用抵扣积分失败");
+                    }
+                }
+            }
+
             //判断该订单是否该部门的第一单
             if (department.getTotalSales() == 0 && department.getQuarterlySales() == 0 && department.getCreateTime().getTime() == department.getLastLiquidationTime().getTime() && department.getFlag() == 0) {
                 //开始按90天一个季度计算
@@ -229,7 +265,7 @@ public class OrderService {
                 if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
                         department.getManagerId(),
                         department.getManagerName(),
-                        department.getId(),
+                        departmentId,
                         departmentName,
                         1,
                         quantity * award.getManagerReward(),

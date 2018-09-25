@@ -26,13 +26,12 @@ public class UserController {
 
     /**
      * 用户新增接口
-     * @param superAdminID
      * @param user
      * @return
      */
     @PostMapping(value = "/insert")
-    public CommonResponse insert(@RequestParam(value = "superAdminID", required = false) String superAdminID, User user) {
-        return userService.insert(superAdminID, user);
+    public CommonResponse insert(User user) {
+        return userService.insert(user);
     }
 
     //删

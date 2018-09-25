@@ -39,6 +39,18 @@ public class Award {
     @Column(name = "managerReward")
     private Integer managerReward;
 
+    /**
+     * 股东奖励积分
+     */
+    @Column(name = "shareholderReward")
+    private Integer shareholderReward;
+
+    /**
+     * 股东购车积分
+     */
+    @Column(name = "shareholderCarReward")
+    private Integer shareholderCarReward;
+
     public Award() {
     }
 
@@ -74,6 +86,22 @@ public class Award {
         this.managerReward = managerReward;
     }
 
+    public Integer getShareholderReward() {
+        return shareholderReward;
+    }
+
+    public void setShareholderReward(Integer shareholderReward) {
+        this.shareholderReward = shareholderReward;
+    }
+
+    public Integer getShareholderCarReward() {
+        return shareholderCarReward;
+    }
+
+    public void setShareholderCarReward(Integer shareholderCarReward) {
+        this.shareholderCarReward = shareholderCarReward;
+    }
+
     @Override
     public String toString() {
         return "Award{" +
@@ -81,6 +109,8 @@ public class Award {
                 ", levelOfReward=" + levelOfReward +
                 ", secondaryReward=" + secondaryReward +
                 ", managerReward=" + managerReward +
+                ", shareholderReward=" + shareholderReward +
+                ", shareholderCarReward=" + shareholderCarReward +
                 '}';
     }
 }

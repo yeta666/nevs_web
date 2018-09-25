@@ -121,6 +121,12 @@ public class User {
     private Integer integral;
 
     /**
+     * 购车积分
+     */
+    @Column(name = "carIntegral")
+    private Integer carIntegral;
+
+    /**
      * 总销售量
      */
     @Column(name = "totalSales")
@@ -268,6 +274,14 @@ public class User {
         this.integral = integral;
     }
 
+    public Integer getCarIntegral() {
+        return carIntegral;
+    }
+
+    public void setCarIntegral(Integer carIntegral) {
+        this.carIntegral = carIntegral;
+    }
+
     public Integer getTotalSales() {
         return totalSales;
     }
@@ -304,6 +318,7 @@ public class User {
                 ", roleId=" + roleId +
                 ", departmentId=" + departmentId +
                 ", integral=" + integral +
+                ", carIntegral=" + carIntegral +
                 ", totalSales=" + totalSales +
                 ", indirectSales=" + indirectSales +
                 '}';

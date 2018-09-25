@@ -132,7 +132,13 @@ public class Order {
      * 车价（元）
      */
     @Column(name = "price")
-    private double price;
+    private Double price;
+
+    /**
+     * 抵扣车价
+     */
+    @Column(name = "deductionPrice")
+    private Integer deductionPrice;
 
     /**
      * 付款方式。1：现金，2：支票，3：转账
@@ -150,25 +156,25 @@ public class Order {
      * 现款订金
      */
     @Column(name = "cashSubscription")
-    private double cashSubscription;
+    private Double cashSubscription;
 
     /**
      * 现款余款
      */
     @Column(name = "cashSpareMoney")
-    private double cashSpareMoney;
+    private Double cashSpareMoney;
 
     /**
      * 按揭首付
      */
     @Column(name = "installmentDownPayment")
-    private double installmentDownPayment;
+    private Double installmentDownPayment;
 
     /**
      * 按揭贷款金额
      */
     @Column(name = "installmentLoanAmount")
-    private double installmentLoanAmount;
+    private Double installmentLoanAmount;
 
     /**
      * 预计交车日期
@@ -477,12 +483,20 @@ public class Order {
         this.quantity = quantity;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Integer getDeductionPrice() {
+        return deductionPrice;
+    }
+
+    public void setDeductionPrice(Integer deductionPrice) {
+        this.deductionPrice = deductionPrice;
     }
 
     public Integer getPaymentMethod() {
@@ -501,35 +515,35 @@ public class Order {
         this.cashOrInstallment = cashOrInstallment;
     }
 
-    public double getCashSubscription() {
+    public Double getCashSubscription() {
         return cashSubscription;
     }
 
-    public void setCashSubscription(double cashSubscription) {
+    public void setCashSubscription(Double cashSubscription) {
         this.cashSubscription = cashSubscription;
     }
 
-    public double getCashSpareMoney() {
+    public Double getCashSpareMoney() {
         return cashSpareMoney;
     }
 
-    public void setCashSpareMoney(double cashSpareMoney) {
+    public void setCashSpareMoney(Double cashSpareMoney) {
         this.cashSpareMoney = cashSpareMoney;
     }
 
-    public double getInstallmentDownPayment() {
+    public Double getInstallmentDownPayment() {
         return installmentDownPayment;
     }
 
-    public void setInstallmentDownPayment(double installmentDownPayment) {
+    public void setInstallmentDownPayment(Double installmentDownPayment) {
         this.installmentDownPayment = installmentDownPayment;
     }
 
-    public double getInstallmentLoanAmount() {
+    public Double getInstallmentLoanAmount() {
         return installmentLoanAmount;
     }
 
-    public void setInstallmentLoanAmount(double installmentLoanAmount) {
+    public void setInstallmentLoanAmount(Double installmentLoanAmount) {
         this.installmentLoanAmount = installmentLoanAmount;
     }
 
@@ -763,6 +777,7 @@ public class Order {
                 ", canChangeColor=" + canChangeColor +
                 ", quantity=" + quantity +
                 ", price=" + price +
+                ", deductionPrice=" + deductionPrice +
                 ", paymentMethod=" + paymentMethod +
                 ", cashOrInstallment=" + cashOrInstallment +
                 ", cashSubscription=" + cashSubscription +

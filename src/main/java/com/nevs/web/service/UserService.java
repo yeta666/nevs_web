@@ -1,8 +1,11 @@
 package com.nevs.web.service;
 
 import com.nevs.web.exception.UserException;
+import com.nevs.web.model.Award;
 import com.nevs.web.model.Department;
+import com.nevs.web.model.IntegralTrading;
 import com.nevs.web.model.User;
+import com.nevs.web.repository.AwardRepository;
 import com.nevs.web.repository.DepartmentRepository;
 import com.nevs.web.repository.IntegralTradingRepository;
 import com.nevs.web.repository.UserRepository;
@@ -22,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -49,96 +53,112 @@ public class UserService {
     private DepartmentRepository departmentRepository;
 
     @Autowired
+    private AwardRepository awardRepository;
+
+    @Autowired
+    private IntegralTradingRepository integralTradingRepository;
+
+    @Autowired
     private CommonUtil commonUtil;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserService.class);
 
     /**
      * 用户注册
-     * @param superAdminID
      * @param user
      * @return
      */
-    public CommonResponse insert(String superAdminID, User user) {
+    @Transactional
+    public CommonResponse insert(User user) {
+
         //判断参数
         String username = user.getUsername();
-        String name = user.getName();
-        if (commonUtil.isNull(user.getUsername()) || commonUtil.isNull(user.getPassword()) || commonUtil.isNull(user.getInvitationCode()) || commonUtil.isNull(name)) {
+        if (commonUtil.isNull(username) || commonUtil.isNull(user.getPassword()) || commonUtil.isNull(user.getInvitationCode()) || commonUtil.isNull(user.getName())) {
             return new CommonResponse(false, 3, "用户名、密码、邀请码、姓名不能为空");
         }
+
         //判断用户名是否存在
         if (userRepository.findByUsername(username) != null) {
             return new CommonResponse(false, 3, "用户名已存在");
         }
-        //判断姓名是否存在
-        if (userRepository.findByName(name) != null) {
-            return new CommonResponse(false, 3, "姓名已存在，如果存在重名，请在名字后面添加数字");
-        }
-        //判断是新增管理员还是新增用户
-        if (superAdminID != null) {        //新增管理员
-            return insertAdmin(superAdminID, user);
-        } else {        //新增用户
-            return insertUser(user);
-        }
-    }
 
-    /**
-     * 新增用户
-     * @param user
-     * @return
-     */
-    public CommonResponse insertUser(User user) {
         //判断邀请码
         Optional<User> userOptional = userRepository.findById(user.getInvitationCode());
         if (!userOptional.isPresent()) {
             return new CommonResponse(false, 3, "邀请码错误");
         }
         User iUser = userOptional.get();
-        //判断邀请人角色
         Integer iRoleId = iUser.getRoleId();
-        if (iRoleId > 3) {     //角色大于3的用户的邀请码都不能使用
+        if (iRoleId != 1 && iRoleId != 2 && iRoleId != 3 && iRoleId != 8) {
             return new CommonResponse(false, 3, "邀请码错误");
-        } else  if (iUser.getRoleId() == 1) {       //1:超级管理员
-            user.setDepartmentId(0);
-        } else {
-            user.setDepartmentId(iUser.getDepartmentId());
         }
+
+        //判断邀请人部门
+        Integer departmentId = iUser.getDepartmentId();
+        Optional<Department> departmentOptional = departmentRepository.findById(departmentId);
+        if (!departmentOptional.isPresent()) {
+            return new CommonResponse(false, 3, "邀请人部门不存在");
+        }
+        Department department = departmentOptional.get();
+
         //补全用户信息
         user.setId(UUID.randomUUID().toString());
-        user.setInviter(iUser.getName());
-        user.setInvitationCodeOfInviter(iUser.getInvitationCode());
-        user.setInviterOfInviter(userRepository.findById(iUser.getInvitationCode()).get().getName());
+        user.setInviter(iUser.getName());       //邀请人的姓名
+        user.setInvitationCodeOfInviter(iUser.getInvitationCode());     //邀请人的邀请人的邀请码
+        user.setInviterOfInviter(iUser.getInviter());       //邀请人的邀请人的姓名
         user.setRoleId(3);
+        user.setDepartmentId(departmentId);
         user.setIntegral(0);
+        user.setCarIntegral(0);
         user.setTotalSales(0);
         user.setIndirectSales(0);
-        //保存
-        if (userRepository.save(user) == null) {
-            return new CommonResponse(false, 3, "注册失败");
-        }
-        return new CommonResponse();
-    }
+        if (iRoleId == 1) {       //1:超级管理员
+            //设置部门id为0，表示未加入部门
+            user.setDepartmentId(0);
+        } else if (iRoleId == 8) {      //8:股东
+            user.setRoleId(8);
+            //邀请人增加积分
+            List<Award> awardList = awardRepository.findAll();
+            if (awardList != null && awardList.size() == 1) {
+                Award award = awardList.get(0);
+                Integer shareholderReward = award.getShareholderReward();
+                Integer shareholderCarReward = award.getShareholderCarReward();
+                if (shareholderReward != null && shareholderCarReward != null) {
+                    iUser.setIntegral(iUser.getIntegral() + shareholderReward);
+                    iUser.setCarIntegral(iUser.getCarIntegral() + shareholderCarReward);
+                    if (userRepository.save(iUser) != null) {
+                        //记录积分交易
+                        if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
+                                iUser.getId(),
+                                iUser.getName(),
+                                departmentId,
+                                department.getName(),
+                                1,
+                                shareholderReward,
+                                "股东邀请股东，奖励可提现积分",
+                                new Date())) != null) {
+                            //记录积分交易
+                            if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
+                                    iUser.getId(),
+                                    iUser.getName(),
+                                    departmentId,
+                                    department.getName(),
+                                    1,
+                                    shareholderCarReward,
+                                    "股东邀请股东，奖励购车积分",
+                                    new Date())) != null) {
+                                //注册
+                                if (userRepository.save(user) != null) {
+                                    return new CommonResponse();
+                                }
+                            }
+                        }
 
-    /**
-     * 新增管理员
-     * @param superAdminID
-     * @param user
-     * @return
-     */
-    public CommonResponse insertAdmin(String superAdminID, User user) {
-        //判断当前用户是否是超级管理员
-        Optional<User> userOptional = userRepository.findById(superAdminID);
-        if (!userOptional.isPresent() || userOptional.get().getRoleId() != 1) {
-            return new CommonResponse(false, 3, "无权新增管理员");
+                    }
+                }
+            }
         }
-        //补全管理员信息
-        user.setId(UUID.randomUUID().toString());
-        user.setRoleId(2);
-        //保存
-        if (userRepository.save(user) == null) {
-            return new CommonResponse(false, 3, "新增管理员失败");
-        }
-        return new CommonResponse();
+        throw new UserException("注册失败");
     }
 
     /**
@@ -384,14 +404,16 @@ public class UserService {
     public CommonResponse iCode(String id, String registerUrl) {
         //查找用户
         Optional<User> userOption = userRepository.findById(id);
-        //判断用户是否存在，判断用户是否存在部门
-        Integer departmentId = userOption.get().getDepartmentId();
-        if (userOption.isPresent() && departmentId > 0 && departmentId < 4) {        //只有1:超级管理员、2:部门管理员、3:销售才能查看邀请码
-            String path = qrCodeUtil.getQRCode(registerUrl + "?iCode=" + id, 300, 300);
-            Map<String, String> result = new HashMap<>();
-            result.put("iCode", id);
-            result.put("iCodeUrl", path);
-            return new CommonResponse(result);
+        if (userOption.isPresent()) {
+            //判断权限
+            Integer roleId = userOption.get().getRoleId();
+            if (roleId == 1 || roleId == 2 || roleId == 3 || roleId == 8) {        //只有1:超级管理员、2:部门管理员、3:销售、8：股东才能查看邀请码
+                String path = qrCodeUtil.getQRCode(registerUrl + "?iCode=" + id, 300, 300);
+                Map<String, String> result = new HashMap<>();
+                result.put("iCode", id);
+                result.put("iCodeUrl", path);
+                return new CommonResponse(result);
+            }
         }
         return new CommonResponse(false, 3, "获取邀请码失败");
     }
@@ -506,6 +528,9 @@ public class UserService {
                             row.createCell(7).setCellValue("已离职");
                         } else {
                             row.createCell(6).setCellValue(user.getIntegral());
+                            if (user.getRoleId() == 8) {
+                                row.createCell(8).setCellValue("股东，购车积分：" + user.getCarIntegral());
+                            }
                         }
                     }
                     //超级管理员记录行为日志
@@ -528,6 +553,9 @@ public class UserService {
                     row.createCell(4).setCellValue(user.getTotalSales());
                     row.createCell(5).setCellValue(user.getIndirectSales());
                     if (user.getRoleId() == 7) {
+                        row.createCell(6).setCellValue(0);
+                        row.createCell(7).setCellValue("已离职");
+                    } else if (user.getRoleId() == 8) {
                         row.createCell(6).setCellValue(0);
                         row.createCell(7).setCellValue("已离职");
                     } else {

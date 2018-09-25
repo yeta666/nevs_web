@@ -253,7 +253,7 @@ public class DepartmentService {
         }
 
         //查询所有部门
-        List<Department> departmentList = departmentRepository.findAllByIdGreaterThan(1);       //部门id大于1
+        List<Department> departmentList = departmentRepository.findAllByIdGreaterThan(2);       //部门id大于2
         if (departmentList == null || departmentList.size() == 0) {
             //记录失败日志
             exceptionLogRepository.save(new ExceptionLog(UUID.randomUUID().toString(),

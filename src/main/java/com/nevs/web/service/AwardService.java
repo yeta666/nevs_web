@@ -37,7 +37,7 @@ public class AwardService {
     public CommonResponse update(String userId, Award award) {
 
         //判断参数
-        if (commonUtil.isNull(award.getId()) || commonUtil.isNull(award.getLevelOfReward()) || commonUtil.isNull(award.getSecondaryReward()) || commonUtil.isNull(award.getManagerReward())) {
+        if (commonUtil.isNull(award.getId()) || commonUtil.isNull(award.getLevelOfReward()) || commonUtil.isNull(award.getSecondaryReward()) || commonUtil.isNull(award.getManagerReward()) || commonUtil.isNull(award.getShareholderReward()) || commonUtil.isNull(award.getShareholderCarReward())) {
             return new CommonResponse(false, 3, "参数不能为空");
         }
 
@@ -55,7 +55,9 @@ public class AwardService {
         Award sAward = awardOptional.get();
         Integer a = sAward.getLevelOfReward();
         Integer b = sAward.getSecondaryReward();
-        Integer c= sAward.getManagerReward();
+        Integer c = sAward.getManagerReward();
+        Integer d = sAward.getShareholderReward();
+        Integer e = sAward.getShareholderCarReward();
 
         //修改
         if (awardRepository.save(award) == null) {
@@ -74,6 +76,14 @@ public class AwardService {
             if (award.getManagerReward() != c) {
                 //记录超级管理员行为日志
                 detail += " 部门管理员奖励由：" + c + "修改为：" + award.getManagerReward();
+            }
+            if (award.getShareholderReward() != d) {
+                //记录超级管理员行为日志
+                detail += " 股东奖励由：" + d + "修改为：" + award.getShareholderReward();
+            }
+            if (award.getShareholderCarReward() != e) {
+                //记录超级管理员行为日志
+                detail += " 股东购车奖励由：" + e + "修改为：" + award.getShareholderCarReward();
             }
             commonUtil.addLog(5, detail, userOptional.get().getName());
         }

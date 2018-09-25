@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50544
 File Encoding         : 65001
 
-Date: 2018-09-09 19:52:19
+Date: 2018-09-26 00:57:34
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -24,13 +24,10 @@ CREATE TABLE `award` (
   `levelOfReward` int(11) NOT NULL COMMENT '一级奖励',
   `secondaryReward` int(11) NOT NULL COMMENT '二级奖励',
   `managerReward` int(11) NOT NULL COMMENT '部门管理员奖励',
+  `shareholderReward` int(11) NOT NULL COMMENT '股东奖励积分',
+  `shareholderCarReward` int(11) NOT NULL COMMENT '股东购车积分',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of award
--- ----------------------------
-INSERT INTO `award` VALUES ('9e2b6707-b35b-11e8-ae37-54ee75c0f47a', '3000', '1000', '1000');
 
 -- ----------------------------
 -- Table structure for department
@@ -50,14 +47,6 @@ CREATE TABLE `department` (
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
--- Records of department
--- ----------------------------
-INSERT INTO `department` VALUES ('0', '未分配部门', 'd1705345-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', '2018-09-01 15:50:30', '0', '0', '2018-09-01 15:50:30', '0');
-INSERT INTO `department` VALUES ('1', '管理部门', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', '2018-09-01 15:50:37', '0', '0', '2018-09-01 15:30:37', '0');
-INSERT INTO `department` VALUES ('2', '销售部1', 'c84980d3-16ce-4e6a-8d4f-55d372c7f3d6', 'yasuo', '2018-09-08 13:17:11', '0', '0', '2018-09-08 13:17:11', '0');
-INSERT INTO `department` VALUES ('3', '销售部2', '71407266-c8ac-4684-bbd8-bb94003ecc39', 'test1', '2018-09-09 17:54:38', '0', '0', '2018-09-09 17:54:38', '0');
-
--- ----------------------------
 -- Table structure for exception
 -- ----------------------------
 DROP TABLE IF EXISTS `exception`;
@@ -70,25 +59,12 @@ CREATE TABLE `exception` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
--- Records of exception
--- ----------------------------
-INSERT INTO `exception` VALUES ('63420f7f-2905-4248-aa1b-3cf980705523', 'org.springframework.web.bind.MissingServletRequestParameterException', 'Required String parameter \'userId\' is not present', '2018-09-08 09:53:28');
-INSERT INTO `exception` VALUES ('68eeaef5-7a5d-4cbf-a15d-80daeb0b7739', 'org.springframework.dao.DataIntegrityViolationException', 'could not execute statement; SQL [n/a]; constraint [PRIMARY]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement', '2018-09-09 17:54:22');
-INSERT INTO `exception` VALUES ('804bb7a0-8468-4969-b145-23d422b76e34', '部门管理员奖励积分', '开始', '2018-09-08 23:13:15');
-INSERT INTO `exception` VALUES ('c00452f2-771e-4f10-ab41-ae54b394245d', '部门管理员奖励积分', '结束', '2018-09-08 23:17:12');
-
--- ----------------------------
 -- Table structure for hibernate_sequence
 -- ----------------------------
 DROP TABLE IF EXISTS `hibernate_sequence`;
 CREATE TABLE `hibernate_sequence` (
   `next_val` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of hibernate_sequence
--- ----------------------------
-INSERT INTO `hibernate_sequence` VALUES ('4');
 
 -- ----------------------------
 -- Table structure for integraltrading
@@ -112,10 +88,6 @@ CREATE TABLE `integraltrading` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
--- Records of integraltrading
--- ----------------------------
-
--- ----------------------------
 -- Table structure for log
 -- ----------------------------
 DROP TABLE IF EXISTS `log`;
@@ -127,17 +99,6 @@ CREATE TABLE `log` (
   `creator` varchar(20) NOT NULL COMMENT '人物',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of log
--- ----------------------------
-INSERT INTO `log` VALUES ('2d7ac13d-f8d4-43be-9fb9-12aa39974ad2', '5', '部门管理员奖励由：100修改为：1000', '2018-09-08 23:02:16', '超级管理员');
-INSERT INTO `log` VALUES ('59758120-a985-4215-8348-5cbd115ae2a4', '5', '二级奖励由：100修改为：1000', '2018-09-08 23:02:16', '超级管理员');
-INSERT INTO `log` VALUES ('60e7664f-b143-4b78-a9d8-297823cbdb24', '5', '一级奖励由：300修改为：3000', '2018-09-08 23:02:16', '超级管理员');
-INSERT INTO `log` VALUES ('63c039d6-8f25-40aa-8052-14954c100757', '3', '部门名：销售部2，部门管理员：test1', '2018-09-09 17:54:38', '超级管理员');
-INSERT INTO `log` VALUES ('b3da6b9e-d65b-45af-ac2d-58929f9fd75b', '5', '二级奖励由：1000修改为：100', '2018-09-08 19:48:49', '超级管理员');
-INSERT INTO `log` VALUES ('b9a054d8-4ec6-4531-b4e5-13600503d51a', '5', '一级奖励由：3000修改为：300', '2018-09-08 19:48:47', '超级管理员');
-INSERT INTO `log` VALUES ('c28778fd-6a51-4865-ac09-e7c593eaa8be', '5', '部门管理员奖励由：1000修改为：100', '2018-09-08 19:48:49', '超级管理员');
 
 -- ----------------------------
 -- Table structure for notice
@@ -152,29 +113,14 @@ CREATE TABLE `notice` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
--- Records of notice
--- ----------------------------
-
--- ----------------------------
 -- Table structure for role
 -- ----------------------------
 DROP TABLE IF EXISTS `role`;
 CREATE TABLE `role` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) NOT NULL,
   `name` varchar(20) NOT NULL COMMENT '角色名',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of role
--- ----------------------------
-INSERT INTO `role` VALUES ('1', '超级管理员');
-INSERT INTO `role` VALUES ('2', '部门管理员');
-INSERT INTO `role` VALUES ('3', '销售');
-INSERT INTO `role` VALUES ('4', '财务');
-INSERT INTO `role` VALUES ('5', '系统管理员');
-INSERT INTO `role` VALUES ('6', '伪超级管理员');
-INSERT INTO `role` VALUES ('7', '已离职');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Table structure for system
@@ -182,17 +128,12 @@ INSERT INTO `role` VALUES ('7', '已离职');
 DROP TABLE IF EXISTS `system`;
 CREATE TABLE `system` (
   `id` varchar(100) NOT NULL COMMENT 'id',
-  `companyProfile` varchar(255) NOT NULL COMMENT '公司简介',
+  `companyProfile` longtext NOT NULL COMMENT '公司简介',
   `homePageImageUrl` varchar(255) NOT NULL COMMENT '首页图片轮播地址，多个,隔开',
   `companyAddress` varchar(255) NOT NULL COMMENT '公司地址',
   `contactNumber` varchar(30) NOT NULL COMMENT '联系电话',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of system
--- ----------------------------
-INSERT INTO `system` VALUES ('0bd2adf7-af5c-11e8-a062-9615c1985358', '公司简介一般包括以下几个方面： 1. 公司概况：这里面可以包括注册时间，注册资本，公司性质，技术力量，规模，员工人数，员工素质等； 2. 公司发展状况：公司的发展速度，有何成绩，有何荣誉称号等； 3. 公司文化：公司的目标，理念，宗旨，使命，愿景，寄语等； 4. 公司主要产品：性能，特色，创新，超前； 5. 销售业绩及网络：销售量，各地销售点等； 6. 售后服务：主要是公司售后服务的承诺。', '/upload/system/1536164334182_67039391.jpg', '成都市武侯区天府大道北段1700号', '12345678987');
 
 -- ----------------------------
 -- Table structure for user
@@ -213,26 +154,15 @@ CREATE TABLE `user` (
   `creditCardNo` varchar(50) DEFAULT NULL COMMENT '银行卡号码',
   `bankOfDeposit` varchar(255) DEFAULT NULL COMMENT '开户银行',
   `phone` varchar(30) DEFAULT NULL COMMENT '手机号码',
-  `roleId` tinyint(1) NOT NULL COMMENT '角色，1：超级管理员，2：部门管理员，3：销售，4：财务，5：系统管理员',
+  `roleId` tinyint(1) NOT NULL COMMENT '角色，1：超级管理员，2：部门管理员，3：销售，4：财务，5：系统管理员，6：伪超级管理员，7：已离职，8：股东',
   `departmentId` tinyint(1) NOT NULL COMMENT '部门',
   `integral` int(11) NOT NULL DEFAULT '0' COMMENT '积分',
   `totalSales` int(11) NOT NULL DEFAULT '0' COMMENT '总销售量',
   `indirectSales` int(11) NOT NULL DEFAULT '0' COMMENT '间接销售量',
+  `carIntegral` int(11) DEFAULT '0' COMMENT '购车的积分',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of user
--- ----------------------------
-INSERT INTO `user` VALUES ('50002aae-fd69-40b5-be9d-fceba690b2bb', 'liqing', 'liqing', 'cf331466-f49f-416c-8208-e6209cf86980', 'ruiwen', 'c84980d3-16ce-4e6a-8d4f-55d372c7f3d6', 'yasuo', 'liqing', null, null, null, null, null, null, '3', '2', '0', '0', '0');
-INSERT INTO `user` VALUES ('71407266-c8ac-4684-bbd8-bb94003ecc39', 'test1', 'test1', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'test1', null, null, null, null, null, null, '2', '3', '0', '0', '0');
-INSERT INTO `user` VALUES ('ade77a31-7b0b-48d3-832c-0c4872b27fb4', 'fakeSuperAdmin', 'fakeSuperAdmin', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', '伪超级管理员', null, null, null, null, null, null, '6', '1', '0', '0', '0');
-INSERT INTO `user` VALUES ('c84980d3-16ce-4e6a-8d4f-55d372c7f3d6', 'yasuo', 'yasuo', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'yasuo', null, null, null, null, null, null, '3', '2', '0', '0', '0');
-INSERT INTO `user` VALUES ('cf331466-f49f-416c-8208-e6209cf86980', 'ruiwen', 'ruiwen', 'c84980d3-16ce-4e6a-8d4f-55d372c7f3d6', 'yasuo', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'ruiwen', null, null, null, null, null, null, '3', '2', '0', '0', '0');
-INSERT INTO `user` VALUES ('d1705310-adb8-11e8-b58c-54ee75c0f47a', 'superAdmin', 'superAdmin', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', '超级管理员', null, null, null, null, null, null, '1', '1', '0', '0', '0');
-INSERT INTO `user` VALUES ('d1743563-adb8-11e8-b58c-54ee75c0f47a', 'finance1', 'finance1', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', '财务1', null, null, null, null, null, null, '4', '1', '0', '0', '0');
-INSERT INTO `user` VALUES ('d1781289-adb8-11e8-b58c-54ee75c0f47a', 'systemAdmin', 'systemAdmin', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', 'd1705310-adb8-11e8-b58c-54ee75c0f47a', '超级管理员', '系统管理员', null, null, null, null, null, null, '5', '1', '0', '0', '0');
 
 -- ----------------------------
 -- Table structure for vehicle
@@ -249,11 +179,6 @@ CREATE TABLE `vehicle` (
   `store` tinyint(1) NOT NULL COMMENT '是否有库存，1：有，0：没有',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of vehicle
--- ----------------------------
-INSERT INTO `vehicle` VALUES ('691eb1e6-bfc8-4f54-a8d1-4bbd54f66214', '小车车1', '小车车1', '200000.00', '10000.00', '0', '/upload/vehicle/example.jpg', '1');
 
 -- ----------------------------
 -- Table structure for vehicleorder
@@ -279,6 +204,7 @@ CREATE TABLE `vehicleorder` (
   `canChangeColor` tinyint(1) NOT NULL COMMENT '是否同意更换颜色，1：同意，0：不同意',
   `quantity` int(11) NOT NULL COMMENT '数量（台）',
   `price` decimal(10,2) NOT NULL COMMENT '车价（元）',
+  `deductionPrice` int(11) DEFAULT '0' COMMENT '抵扣车价',
   `paymentMethod` tinyint(1) NOT NULL COMMENT '付款方式。1：现金，2：支票，3：转账',
   `cashOrInstallment` tinyint(1) NOT NULL COMMENT '现款或按揭，1：现款，0：按揭',
   `cashSubscription` decimal(10,2) DEFAULT NULL COMMENT '现款订金',
@@ -314,10 +240,6 @@ CREATE TABLE `vehicleorder` (
   PRIMARY KEY (`orderNo`),
   KEY `FKff3gnuw9g3cb78jknbcqjsq1v` (`salesId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ----------------------------
--- Records of vehicleorder
--- ----------------------------
 
 -- ----------------------------
 -- Procedure structure for myProc
