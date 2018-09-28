@@ -74,9 +74,9 @@ public class NevsWebApplication {
 	public MultipartConfigElement multipartConfigElement() {
 		MultipartConfigFactory factory = new MultipartConfigFactory();
 		//单个文件最大（KB/MB）
-		factory.setMaxFileSize("5MB");
+		//factory.setMaxFileSize("5MB");
 		//设置总上传数据总大小
-		factory.setMaxRequestSize("15MB");
+		//factory.setMaxRequestSize("15MB");
 		return factory.createMultipartConfig();
 	}
 }

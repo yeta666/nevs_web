@@ -147,18 +147,28 @@ public class UserService {
                                     shareholderCarReward,
                                     "股东邀请股东，奖励购车积分",
                                     new Date())) != null) {
-                                //注册
-                                if (userRepository.save(user) != null) {
-                                    return new CommonResponse();
-                                }
+                            } else {
+                                throw new UserException("注册失败");
                             }
+                        } else {
+                            throw new UserException("注册失败");
                         }
-
+                    } else {
+                        throw new UserException("注册失败");
                     }
+                } else {
+                    throw new UserException("注册失败");
                 }
+            } else {
+                throw new UserException("注册失败");
             }
         }
-        throw new UserException("注册失败");
+        //注册
+        if (userRepository.save(user) != null) {
+            return new CommonResponse();
+        } else {
+            throw new UserException("注册失败");
+        }
     }
 
     /**
