@@ -50,10 +50,10 @@ public class NoticeController {
      * @param userId
      * @return
      */
-    @PostMapping(value = "/update")
+    /*@PostMapping(value = "/update")
     public CommonResponse update(Notice notice, @RequestParam(value = "userId") String userId) {
         return noticeService.update(notice, userId);
-    }
+    }*/
 
     /**
      * 查询公告接口
