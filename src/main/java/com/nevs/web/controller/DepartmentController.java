@@ -39,10 +39,10 @@ public class DepartmentController {
      * @param id
      * @return
      */
-    @DeleteMapping(value = "/delete")
+    /*@DeleteMapping(value = "/delete")
     public CommonResponse delete(@RequestParam(value = "userId") String userId, @RequestParam(value = "id") Integer id) {
         return departmentService.delete(userId, id);
-    }
+    }*/
 
     //改
 

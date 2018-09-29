@@ -33,6 +33,18 @@ public class NoticeController {
     }
 
     /**
+     * 删除公告接口
+     * @param userId
+     * @param id
+     * @return
+     */
+    @DeleteMapping(value = "/delete")
+    public CommonResponse delete(@RequestParam(value = "userId") String userId,
+                                 @RequestParam(value = "id") String id) {
+        return noticeService.delete(userId, id);
+    }
+
+    /**
      * 修改公告接口
      * @param notice
      * @param userId

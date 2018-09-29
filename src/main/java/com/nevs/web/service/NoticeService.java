@@ -63,6 +63,21 @@ public class NoticeService {
     }
 
     /**
+     * 删除公告
+     * @param userId
+     * @param id
+     * @return
+     */
+    public CommonResponse delete(String userId, String id) {
+        //判断权限
+        if (!commonUtil.verifyAuthority(userId, 5)) {       //5:系统管理员
+            return new CommonResponse(false, 3, "无权删除公告");
+        }
+        noticeRepository.deleteById(id);
+        return new CommonResponse();
+    }
+
+    /**
      * 修改公告
      * @param notice
      * @param userId
