@@ -303,54 +303,52 @@ public class UserService {
     /**
      * 用户修改信息
      * @param userId
-     * @param updateUser
+     * @param user
      * @param newPassword
      * @param dimission
      * @return
      */
-    public CommonResponse update(String userId, User updateUser, String newPassword, Integer dimission) {
-        //判断参数
-        String id = updateUser.getId();
-        if (commonUtil.isNull(id)) {
-            return new CommonResponse(false, 3, "用户id不能为空");
+    public CommonResponse update(String userId, User user, String newPassword, Integer dimission) {
+        //判断修改操作
+        if (!commonUtil.isNull(newPassword)) {      //修改密码
+            return updatePassword(user, newPassword);
         }
-        //判断当前用户是否存在
-        Optional<User> userOptional = userRepository.findById(id);
-        if (!userOptional.isPresent()) {
-            return new CommonResponse(false, 3, "用户不存在");
+        if (dimission != null) {        //设置离/复职
+            return updateDimission(userId, user, dimission);
         }
-        //判断修改密码还是修改用户信息
-        if (!commonUtil.isNull(newPassword) && commonUtil.isNull(userId)) {      //修改密码
-            return updatePassword(updateUser, userOptional.get(), newPassword);
-        } else if (!commonUtil.isNull(userId) && commonUtil.isNull(newPassword)) {        //修改用户信息
-            return updateUser(userId, updateUser, dimission);
-        } else {
-            return new CommonResponse(false, 3, "修改用户信息失败");
+        if (newPassword == null && dimission == null && !commonUtil.isNull(userId)) {       //修改用户信息
+            return updateUser(userId, user);
         }
+        return new CommonResponse(false, 3, "修改失败");
     }
 
     /**
      * 修改密码
-     * @param updateUser
      * @param user
      * @param newPassword
      * @return
      */
-    public CommonResponse updatePassword(User updateUser, User user, String newPassword) {
-        //判断用户名
-        if (commonUtil.isNull(updateUser.getUsername()) ||
-                commonUtil.isNull(user.getUsername()) ||
-                !updateUser.getUsername().equals(user.getUsername())) {
-            return new CommonResponse(false, 3, "用户名错误");
+    public CommonResponse updatePassword(User user, String newPassword) {
+        //判断参数
+        String id = user.getId();
+        String username = user.getUsername();
+        String password = user.getPassword();
+        if (commonUtil.isNull(id) ||
+                commonUtil.isNull(username) ||
+                commonUtil.isNull(password)) {
+            return new CommonResponse(false, 3, "参数不匹配");
         }
-        //判断原密码
-        if (commonUtil.isNull(updateUser.getPassword()) ||
-                commonUtil.isNull(updateUser.getPassword()) ||
-                !updateUser.getPassword().equals(user.getPassword())) {
-            return new CommonResponse(false, 3, "原密码错误");
+        Optional<User> sUserOptional = userRepository.findById(id);
+        if (!sUserOptional.isPresent()) {
+            return new CommonResponse(false, 3, "用户不存在");
+        }
+        User sUser = sUserOptional.get();
+        //验证用户名、原密码是否匹配
+        if (!username.equals(sUser.getUsername()) || !password.equals(sUser.getPassword())) {
+            return new CommonResponse(false, 3, "用户名或原密码不正确");
         }
         //修改密码
-        if (userRepository.updatePassword(newPassword, updateUser.getId()) != 1) {
+        if (userRepository.updatePassword(newPassword, id) != 1) {
             return new CommonResponse(false, 3, "修改密码失败");
         }
         return new CommonResponse();
@@ -360,46 +358,105 @@ public class UserService {
      * 修改用户信息
      * @param userId
      * @param user
+     * @return
+     */
+    public CommonResponse updateUser(String userId, User user) {
+        //判断参数
+        if (commonUtil.isNull(user.getId()) ||
+                commonUtil.isNull(user.getIdCardNo()) ||
+                commonUtil.isNull(user.getImageUrl1()) ||
+                commonUtil.isNull(user.getImageUrl2()) ||
+                commonUtil.isNull(user.getCreditCardNo()) ||
+                commonUtil.isNull(user.getBankOfDeposit()) ||
+                commonUtil.isNull(user.getPhone())) {
+            return new CommonResponse(false, 3, "参数不匹配");
+        }
+        //判断权限
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (!userOptional.isPresent()) {
+            return new CommonResponse(false, 3, "无权修改用户信息");
+        }
+        User admin = userOptional.get();
+        if (admin.getRoleId() != 1 && admin.getRoleId() != 2) {       //不是超级管理员或部门管理员
+            return new CommonResponse(false, 3, "无权修改用户信息");
+        }
+        //修改用户信息
+        if (userRepository.updateUser(user.getIdCardNo(),
+                user.getImageUrl1(),
+                user.getImageUrl2(),
+                user.getCreditCardNo(),
+                user.getBankOfDeposit(),
+                user.getPhone(),
+                user.getId()) != 1) {
+            return new CommonResponse(false, 3, "修改用户信息失败");
+        }
+        //超级管理员记录行为日志
+        if (!commonUtil.addLog(6, "修改姓名为：" + user.getName() + "的用户信息", admin.getName())) {
+            throw new UserException("保存日志失败");
+        }
+        return new CommonResponse();
+    }
+
+    /**
+     * 设置离/复职
+     * @param userId
+     * @param user
      * @param dimission
      * @return
      */
-    public CommonResponse updateUser(String userId, User user, Integer dimission) {
+    public CommonResponse updateDimission(String userId, User user, Integer dimission) {
         //判断权限
         Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            User admin = userOptional.get();
-            if (admin.getRoleId() < 3) {        //只有超级管理员和部门管理员可以修改信息
-                //修改
-                if (!commonUtil.isNull(dimission) && dimission == 1) {
-                    if (userRepository.updateUser(user.getIdCardNo(),
-                            user.getImageUrl1(),
-                            user.getImageUrl2(),
-                            user.getCreditCardNo(),
-                            user.getBankOfDeposit(),
-                            user.getPhone(),
-                            7,
-                            user.getId()) == 1) {
-                        return new CommonResponse();
-                    }
-                } else {
-                    if (userRepository.updateUser(user.getIdCardNo(),
-                            user.getImageUrl1(),
-                            user.getImageUrl2(),
-                            user.getCreditCardNo(),
-                            user.getBankOfDeposit(),
-                            user.getPhone(),
-                            user.getRoleId(),
-                            user.getId()) == 1) {
-                        return new CommonResponse();
-                    }
-                }
-                //超级管理员记录行为日志
-                if (admin.getRoleId() == 1) {
-                    commonUtil.addLog(6, "修改姓名为：" + user.getName() + "的用户信息", admin.getName());
-                }
-            }
+        if (!userOptional.isPresent()) {
+            return new CommonResponse(false, 3, "无权设置离/复职");
         }
-        return new CommonResponse(false, 3, "修改信息失败");
+        User admin = userOptional.get();
+        if (admin.getRoleId() != 1) {       //不是超级管理员
+            return new CommonResponse(false, 3, "无权设置离/复职");
+        }
+        //判断参数
+        String id = user.getId();
+        if (commonUtil.isNull(id)) {
+            return new CommonResponse(false, 3, "参数不匹配");
+        }
+        //获取被修改用户
+        Optional<User> userOptional1 = userRepository.findById(id);
+        if (!userOptional1.isPresent()) {
+            return new CommonResponse(false, 3, "用户不存在");
+        }
+        User user1 = userOptional1.get();
+        //判断离职还是复职
+        if (dimission == 1) {       //离职
+            //判断设置离职的用户是否销售
+            if (user1.getRoleId() != 3) {
+                return new CommonResponse(false, 3, "只有销售才能被设置离职");
+            }
+            //设置离职
+            if (userRepository.updateRoleId(7, id) != 1) {
+                return new CommonResponse(false, 3, "设置离职失败");
+            }
+            //超级管理员记录行为日志
+            if (!commonUtil.addLog(6, "设置姓名为：" + user1.getName() + "的用户离职", admin.getName())) {
+                throw new UserException("保存日志失败");
+            }
+            return new CommonResponse();
+        } else if (dimission == 2) {        //复职
+            //判断设置复职的用户是否已离职
+            if (user1.getRoleId() != 7) {
+                return new CommonResponse(false, 3, "只有已离职的用户才能设置复职");
+            }
+            //设置复职
+            if (userRepository.updateRoleId(3, id) != 1) {
+                return new CommonResponse(false, 3, "设置复职失败");
+            }
+            //超级管理员记录行为日志
+            if (!commonUtil.addLog(6, "设置姓名为：" + user1.getName() + "的用户复职", admin.getName())) {
+                throw new UserException("保存日志失败");
+            }
+            return new CommonResponse();
+        } else {
+            return new CommonResponse(false, 3, "参数不匹配");
+        }
     }
 
     @Autowired
