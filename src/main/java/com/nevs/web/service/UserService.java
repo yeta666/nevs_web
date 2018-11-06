@@ -116,59 +116,56 @@ public class UserService {
             //设置部门id为0，表示未加入部门
             user.setDepartmentId(0);
         } else if (iRoleId == 8) {      //8:股东
-            user.setRoleId(8);
-            //邀请人增加积分
-            List<Award> awardList = awardRepository.findAll();
-            if (awardList != null && awardList.size() == 1) {
+            if (iUser.getDepartmentId() != 1) {     //非给定的股东账号
+                user.setRoleId(8);
+                //邀请人增加积分
+                List<Award> awardList = awardRepository.findAll();
+                if (awardList == null || awardList.size() != 1) {
+                    return new CommonResponse(false, 3, "股东邀请人增加积分失败");
+                }
                 Award award = awardList.get(0);
                 Integer shareholderReward = award.getShareholderReward();
                 Integer shareholderCarReward = award.getShareholderCarReward();
-                if (shareholderReward != null && shareholderCarReward != null) {
-                    iUser.setIntegral(iUser.getIntegral() + shareholderReward);
-                    iUser.setCarIntegral(iUser.getCarIntegral() + shareholderCarReward);
-                    if (userRepository.save(iUser) != null) {
-                        //记录积分交易
-                        if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
-                                iUser.getId(),
-                                iUser.getName(),
-                                departmentId,
-                                department.getName(),
-                                1,
-                                shareholderReward,
-                                "股东邀请股东，奖励可提现积分",
-                                new Date())) != null) {
-                            //记录积分交易
-                            if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
-                                    iUser.getId(),
-                                    iUser.getName(),
-                                    departmentId,
-                                    department.getName(),
-                                    1,
-                                    shareholderCarReward,
-                                    "股东邀请股东，奖励购车积分",
-                                    new Date())) != null) {
-                            } else {
-                                throw new UserException("注册失败");
-                            }
-                        } else {
-                            throw new UserException("注册失败");
-                        }
-                    } else {
-                        throw new UserException("注册失败");
-                    }
-                } else {
-                    throw new UserException("注册失败");
+                if (shareholderReward == null || shareholderCarReward == null) {
+                    return new CommonResponse(false, 3, "股东邀请人增加积分失败");
                 }
-            } else {
-                throw new UserException("注册失败");
+                iUser.setIntegral(iUser.getIntegral() + shareholderReward);
+                iUser.setCarIntegral(iUser.getCarIntegral() + shareholderCarReward);
+                if (userRepository.save(iUser) == null) {
+                    return new CommonResponse(false, 3, "股东邀请人增加积分失败");
+                }
+                //记录积分交易
+                if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
+                        iUser.getId(),
+                        iUser.getName(),
+                        departmentId,
+                        department.getName(),
+                        1,
+                        shareholderReward,
+                        "股东邀请股东，奖励可提现积分",
+                        new Date())) == null) {
+                    throw new UserException("股东邀请人增加积分失败");
+                }
+                //记录积分交易
+                if (integralTradingRepository.save(new IntegralTrading(UUID.randomUUID().toString(),
+                        iUser.getId(),
+                        iUser.getName(),
+                        departmentId,
+                        department.getName(),
+                        1,
+                        shareholderCarReward,
+                        "股东邀请股东，奖励购车积分",
+                        new Date())) == null) {
+                    throw new UserException("股东邀请人增加积分失败");
+                }
             }
         }
+
         //注册
-        if (userRepository.save(user) != null) {
-            return new CommonResponse();
-        } else {
+        if (userRepository.save(user) == null) {
             throw new UserException("注册失败");
         }
+        return new CommonResponse();
     }
 
     /**
@@ -428,8 +425,8 @@ public class UserService {
         //判断离职还是复职
         if (dimission == 1) {       //离职
             //判断设置离职的用户是否销售
-            if (user1.getRoleId() != 3) {
-                return new CommonResponse(false, 3, "只有销售才能被设置离职");
+            if (user1.getRoleId() != 3 && user1.getRoleId() != 8) {
+                return new CommonResponse(false, 3, "只有销售和股东用户才能被设置离职");
             }
             //设置离职
             if (userRepository.updateRoleId(7, id) != 1) {
@@ -445,8 +442,14 @@ public class UserService {
             if (user1.getRoleId() != 7) {
                 return new CommonResponse(false, 3, "只有已离职的用户才能设置复职");
             }
+            int roleId;
+            if (user1.getDepartmentId() == 2) {
+                roleId = 8;
+            } else {
+                roleId = 3;
+            }
             //设置复职
-            if (userRepository.updateRoleId(3, id) != 1) {
+            if (userRepository.updateRoleId(roleId, id) != 1) {
                 return new CommonResponse(false, 3, "设置复职失败");
             }
             //超级管理员记录行为日志
@@ -601,7 +604,9 @@ public class UserService {
                         }
                     }
                     //超级管理员记录行为日志
-                    commonUtil.addLog(7, "下载部门名：" + department.getName() + "的用户信息", userOptional.get().getName());
+                    if (roleId == 1) {
+                        commonUtil.addLog(7, "下载部门名：" + department.getName() + "的用户信息", userOptional.get().getName());
+                    }
                 }
             }
         } else {
@@ -631,7 +636,9 @@ public class UserService {
                 }
             }
             //超级管理员记录行为日志
-            commonUtil.addLog(7, "下载所有部门的用户信息", userOptional.get().getName());
+            if (roleId == 1) {
+                commonUtil.addLog(7, "下载所有部门的用户信息", userOptional.get().getName());
+            }
         }
 
         //强制下载

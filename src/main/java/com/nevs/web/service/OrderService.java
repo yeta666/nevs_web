@@ -379,7 +379,7 @@ public class OrderService {
         String salesId = order.getSalesId();
         if (!commonUtil.isNull(salesId)) {
             Optional<User> userOptional = userRepository.findById(salesId);
-            if (userOptional.isPresent() && userOptional.get().getRoleId() != 3 && userOptional.get().getRoleId() != 2) {
+            if (userOptional.isPresent() && userOptional.get().getRoleId() != 3 && userOptional.get().getRoleId() != 2 && userOptional.get().getRoleId() != 8) {
                 return new CommonResponse(false, 3, "不能查询管理用户");
             }
         }
