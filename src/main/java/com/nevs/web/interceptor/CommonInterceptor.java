@@ -33,7 +33,7 @@ public class CommonInterceptor implements HandlerInterceptor {
      * @return
      */
     public boolean isPremited(String uri) {
-        String[] permitUris = {"/user/insert", "/login", "/logout", "/upload", "/download", "/vCode"};        //注册、登陆、注销、上传、获取图片、下载、获取验证码
+        String[] permitUris = {"/user/insert", "/login", "/logout", "/upload", "/download", "/vCode", "/error"};        //注册、登陆、注销、上传、获取图片、下载、获取验证码
         for (String permit : permitUris) {
             if (uri.indexOf(permit) != -1) {
                 return true;

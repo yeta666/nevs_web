@@ -1,8 +1,10 @@
 package com.nevs.web;
 
 import com.nevs.web.interceptor.CommonInterceptor;
+import com.nevs.web.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
@@ -29,12 +31,6 @@ public class NevsWebApplication {
 		SpringApplication.run(NevsWebApplication.class, args);
 	}
 
-	@Value("${nevs.upload}")
-	private String upload;
-
-	@Value("${nevs.download}")
-	private String download;
-
 	/**
 	 * 配置拦截器
 	 * 由于添加拦截器需要继承WebMvcConfigurerAdapter类
@@ -60,8 +56,10 @@ public class NevsWebApplication {
 
 		@Override
 		public void addResourceHandlers(ResourceHandlerRegistry registry) {
-			registry.addResourceHandler("/upload/**").addResourceLocations("file:" + upload);
-			registry.addResourceHandler("/download/**").addResourceLocations("file:" + download);
+			registry.addResourceHandler("/upload/**").addResourceLocations("classpath:upload/");
+			registry.addResourceHandler("/download/**").addResourceLocations("classpath:download/");
+			registry.addResourceHandler("/upload/**").addResourceLocations("file:upload/");
+			registry.addResourceHandler("/download/**").addResourceLocations("file:download/");
 			super.addResourceHandlers(registry);
 		}
 	}

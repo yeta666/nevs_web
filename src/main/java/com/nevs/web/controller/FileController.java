@@ -3,10 +3,7 @@ package com.nevs.web.controller;
 import com.nevs.web.service.FileService;
 import com.nevs.web.util.CommonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
@@ -32,5 +29,13 @@ public class FileController {
     public CommonResponse upload(@RequestParam(value = "file") MultipartFile file,
                                  @RequestParam(value = "type") Integer type) throws IOException {
         return fileService.upload(file, type);
+    }
+
+    /**
+     * 文件清理接口
+     */
+    @GetMapping(value = "/clean")
+    public void clean() {
+        fileService.clean();
     }
 }

@@ -235,9 +235,6 @@ public class UserService {
         return new CommonResponse(result);
     }
 
-    @Value("${nevs.download}")
-    private String download;
-
     /**
      * 获取验证码
      * @param request
@@ -247,7 +244,7 @@ public class UserService {
         int w = 24, h = 52, size = 5;
         String code = VerifyCodeUtil.generateVerifyCode(size).toUpperCase();
         request.getSession().setAttribute("vCode", code);
-        File file = new File(new File(download), System.currentTimeMillis() + "_" + new Random().nextInt() + ".jpg");
+        File file = new File(FileService.download, System.currentTimeMillis() + "_" + new Random().nextInt() + ".jpg");
         try {
             VerifyCodeUtil.outputImage(w * code.length(), h, file, code);
         } catch (IOException e) {
